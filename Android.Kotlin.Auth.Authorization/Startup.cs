@@ -79,9 +79,7 @@ namespace Android.Kotlin.Auth.Authorization
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
             }
-
             app.UseStaticFiles();
-
             app.UseRouting();
             app.UseIdentityServer();
             app.UseAuthentication();
