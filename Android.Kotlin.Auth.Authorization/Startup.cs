@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
 using IdentityServer4;
 using Android.Kotlin.Auth.Authorization.Data;
 using Android.Kotlin.Auth.Authorization.Models;
+using Android.Kotlin.Auth.Authorization.Services;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -26,13 +29,17 @@ namespace Android.Kotlin.Auth.Authorization
             Configuration = configuration;
         }
 
+        [Obsolete("Obsolete")]
         public void ConfigureServices(IServiceCollection services)
         {
 
             services.AddLocalApiAuthentication();
 
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddFluentValidation(opt =>
+            {
+                opt.RegisterValidatorsFromAssemblyContaining<Startup>();
+            });
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
@@ -55,15 +62,12 @@ namespace Android.Kotlin.Auth.Authorization
                 .AddInMemoryApiScopes(Config.ApiScopes)
                 .AddInMemoryClients(Config.Clients)
                 .AddAspNetIdentity<ApplicationUser>();
-
             // not recommended for production - you need to store your key material somewhere secure
-            builder.AddDeveloperSigningCredential();
-
+            builder.AddDeveloperSigningCredential().AddResourceOwnerValidator<IdentityResourceOwnerPasswordValidator>();
             //services.AddAuthentication()
             //    .AddGoogle(options =>
             //    {
             //        options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                    
             //        // register your IdentityServer with Google at https://console.developers.google.com
             //        // enable the Google+ API
             //        // set the redirect URI to https://localhost:5001/signin-google
